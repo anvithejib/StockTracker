@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ stock.name }} ({{ stock.ticker }}) - Stock Details</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            background-color: #121212; 
+            color: white; 
+            margin: 20px;
+        }
+        .container { 
+            width: 80%; 
+            margin: auto; 
+            background: #1e1e1e; 
+            padding: 20px; 
+            border-radius: 10px; 
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.2); 
+        }
+        h1, h2 { 
+            color: #00ff00; 
+        }
+        table { 
+            width: 100%; 
+            margin: 20px 0; 
+            border-collapse: collapse; 
+            background: #222; 
+            color: white;
+            border-radius: 8px; 
+            overflow: hidden;
+        }
+        th, td { 
+            padding: 12px; 
+            border: 1px solid #444; 
+            text-align: center; 
+        }
+        th { 
+            background: #00ff00; 
+            color: black; 
+        }
+        .chart-container {
+            width: 90%; /* Increased width */
+            height: 400px; /* Increased height */
+            margin: auto;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #00ff00;
+            color: black;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 5px;
+        }
+        .back-link:hover {
+            background: #00cc00;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>{{ stock.name }} ({{ stock.ticker }})</h1>
+    <h2>Current Price: ₹{{ stock.price }}</h2>
+
+    <!-- Price Chart -->
+    <div class="chart-container">
+        <canvas id="priceChart"></canvas>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var ctx = document.getElementById('priceChart').getContext('2d');
+
+            var chartData = {
+                labels: JSON.parse('{{ chart_data.dates | tojson | safe }}'),
+                datasets: [{
+                    label: "Price History",
+                    data: JSON.parse('{{ chart_data.prices | tojson | safe }}'),
+                    borderColor: '#00ff00',
+                    backgroundColor: 'rgba(0, 255, 0, 0.2)',
+                    borderWidth: 1, /* Thinner line */
+                    fill: true
+                }]
+            };
+
+            var chart = new Chart(ctx, {
+                type: 'line',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        });
+    </script>
+
+    <!-- Financial Data -->
+    <h2>Yearly Financials</h2>
+    <table>
+        <tr><th>Year</th><th>EPS Growth</th><th>Revenue Growth</th><th>Profit</th><th>Earnings</th></tr>
+        {% if yearly_financials %}
+        <tr>
+            <td>{{ yearly_financials.year }}</td>
+            <td>{{ yearly_financials.eps_growth }}%</td>
+            <td>{{ yearly_financials.revenue_growth }}%</td>
+            <td>₹{{ yearly_financials.profit }}M</td>
+            <td>₹{{ yearly_financials.earnings }}M</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5">No data available</td></tr>
+        {% endif %}
+    </table>
+
+    <h2>Quarterly Financials (Latest Quarter)</h2>
+    <table>
+        <tr><th>Quarter</th><th>EPS</th><th>Revenue Growth</th><th>Profit</th><th>Earnings</th></tr>
+        {% if quarterly_financials %}
+        <tr>
+            <td>{{ quarterly_financials.quarter }}</td>
+            <td>{{ quarterly_financials.eps_growth }}</td>
+            <td>₹{{ quarterly_financials.revenue_growth }}M</td>
+            <td>₹{{ quarterly_financials.profit }}M</td>
+            <td>₹{{ quarterly_financials.earnings }}M</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5">No data available</td></tr>
+        {% endif %}
+    </table>
+
+    <!-- Market Analysis -->
+    <h2>Market Analysis</h2>
+    <table>
+        <tr><th>P/E Ratio</th><th>Dividend Yield</th><th>Market Cap</th><th>Volume</th></tr>
+        {% if market_analysis %}
+        <tr>
+            <td>{{ market_analysis.pe_ratio }}</td>
+            <td>{{ market_analysis.dividend_yield }}%</td>
+            <td>₹{{ market_analysis.market_cap }}M</td>
+            <td>{{ market_analysis.volume }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4">No data available</td></tr>
+        {% endif %}
+    </table>
+
+    <a href="/portfolio/buy-stocks" class="back-link">🔙 Back to Buy Stocks</a>
+</div>
+
+</body>
+</html>

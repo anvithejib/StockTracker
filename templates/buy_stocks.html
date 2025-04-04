@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buy Stocks</title>
+  <style>
+    /* Dark mode styles */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #ffffff;
+      text-align: center;
+      padding: 20px;
+    }
+    h2, h3 {
+      color: #00ff00;
+    }
+    table {
+      width: 90%;
+      margin: 20px auto;
+      border-collapse: collapse;
+      background: #1e1e1e;
+      color: white;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 12px;
+      text-align: center;
+      border: 1px solid #444;
+    }
+    th {
+      background: #222;
+      cursor: pointer;
+    }
+    tbody tr:hover {
+      background: rgba(0, 255, 0, 0.2);
+    }
+    .btn {
+      padding: 10px 15px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      border-radius: 5px;
+      transition: 0.3s;
+    }
+    .filter-btn, .action-btn {
+      display: block;
+      margin: 10px auto;
+      padding: 12px 18px;
+      font-weight: bold;
+      text-decoration: none;
+      border-radius: 5px;
+      text-align: center;
+    }
+    .filter-btn {
+      background-color: #ff6600;
+      color: white;
+    }
+    .filter-btn:hover {
+      background-color: #cc5200;
+    }
+    .action-btn {
+      background-color: #007bff;
+      color: white;
+    }
+    .action-btn:hover {
+      background-color: #0056b3;
+    }
+    .input-box {
+      padding: 8px;
+      width: 80px;
+      border-radius: 5px;
+      border: 1px solid #444;
+      background: #333;
+      color: white;
+      text-align: center;
+    }
+    .input-box::placeholder {
+      color: #bbb;
+    }
+    #stock-results, #top-movers, .extra-results {
+      margin-top: 20px;
+    }
+    .gain {
+      color: #00ff00;
+    }
+    .loss {
+      color: #ff4c4c;
+    }
+    /* Section styling for new queries */
+    .section {
+      border: 1px solid #444;
+      border-radius: 5px;
+      margin: 20px auto;
+      padding: 10px;
+      width: 90%;
+      background: #1e1e1e;
+    }
+    .section h3 {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>📈 Buy Stocks</h2>
+
+  <!-- Filter Stocks Section -->
+  <h3>🔍 Filter Stocks</h3>
+  <div style="display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap;">
+    <label for="min_eps">Min EPS:</label>
+    <input type="number" id="min_eps" class="input-box" placeholder="Min EPS" value="0">
+    <label for="max_pe">Max P/E:</label>
+    <input type="number" id="max_pe" class="input-box" placeholder="Max P/E" value="100">
+    <button class="filter-btn" onclick="filterStocks()">🔎 Apply Filter</button>
+  </div>
+
+  <!-- Table of Stocks -->
+  <table id="stocksTable">
+    <thead>
+      <tr>
+        <th onclick="sortTable(0)">Ticker 🔼</th>
+        <th>Name</th>
+        <th onclick="sortTable(2)">Current Price 🔼</th>
+        <th onclick="sortTable(3)">52W High 🔼</th>
+        <th onclick="sortTable(4)">52W Low 🔼</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for stock in stocks %}
+      <tr>
+        <td>
+          <a href="{{ url_for('stock_details.stock_page', ticker=stock.ticker) }}" style="color: #00ff00; text-decoration: none; font-weight: bold;">
+            {{ stock.ticker }}
+          </a>
+        </td>
+        <td>{{ stock.name }}</td>
+        <td>₹{{ stock.price }}</td>
+        <td>₹{{ stock.high_52 }}</td>
+        <td>₹{{ stock.low_52 }}</td>
+        <td>
+          <form method="post" action="{{ url_for('transactions.buy_stock') }}" style="display: flex; gap: 10px; align-items: center; justify-content: center;">
+            <input type="hidden" name="ticker" value="{{ stock.ticker }}">
+            <input type="number" name="quantity" min="1" required class="input-box">
+            <button type="submit" class="btn" style="background-color: #00ff00; color: black;">Buy</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Top Gainers & Losers Section -->
+  <h3>🚀 Top Gainers & 📉 Losers (7 Days)</h3>
+  <div id="top-movers" class="extra-results">Loading top movers...</div>
+
+  <!-- Filter Results Section -->
+  <div id="stock-results" class="extra-results"></div>
+  
+  <!-- Update Prices Button -->
+  <button class="action-btn" onclick="updatePrices()">🔄 Update Prices</button>
+  
+  <!-- New Analysis Sections -->
+  <div class="section">
+    <h3>📈 Highest EPS Growth</h3>
+    <button class="action-btn" onclick="fetchHighestEPSGrowth()">Fetch Highest EPS Growth</button>
+    <div id="eps-results" class="extra-results">Loading highest EPS growth...</div>
+  </div>
+  
+  <div class="section">
+    <h3>💎 Undervalued Stocks</h3>
+    <button class="action-btn" onclick="fetchUndervaluedStocks()">Fetch Undervalued Stocks</button>
+    <div id="undervalued-results" class="extra-results">Loading undervalued stocks...</div>
+  </div>
+  
+  <div class="section">
+    <h3>📊 Most Traded Stocks (Volume)</h3>
+    <button class="action-btn" onclick="fetchMostTraded()">Fetch Most Traded Stocks</button>
+    <div id="traded-results" class="extra-results">Loading most traded stocks...</div>
+  </div>
+  
+  <script>
+    function fetchTopMovers() {
+      fetch("{{ url_for('buy_stocks.top_movers') }}")
+        .then(response => response.json())
+        .then(data => {
+          let html = "<table><tr><th colspan='2'>📈 Top Gainers</th><th colspan='2'>📉 Top Losers</th></tr>";
+          html += "<tr><th>Stock</th><th>Change %</th><th>Stock</th><th>Change %</th></tr>";
+          for (let i = 0; i < 5; i++) {
+              let gainer = data.gainers[i] || { name: "-", percentage_change: "-" };
+              let loser = data.losers[i] || { name: "-", percentage_change: "-" };
+              html += `<tr>
+                          <td>${gainer.name}</td><td class="gain">${gainer.percentage_change}%</td>
+                          <td>${loser.name}</td><td class="loss">${loser.percentage_change}%</td>
+                       </tr>`;
+          }
+          html += "</table>";
+          document.getElementById("top-movers").innerHTML = html;
+        })
+        .catch(error => {
+          console.error("Error fetching top movers:", error);
+          document.getElementById("top-movers").innerHTML = "<p>Error loading top movers.</p>";
+        });
+    }
+
+    function filterStocks() {
+      let min_eps = document.getElementById("min_eps").value;
+      let max_pe = document.getElementById("max_pe").value;
+      fetch("{{ url_for('buy_stocks.filter_stocks') }}", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ min_eps: min_eps, max_pe: max_pe })
+      })
+      .then(response => response.json())
+      .then(data => {
+          let html = "<h3>🔎 Filtered Stocks</h3><table><tr><th>Ticker</th><th>Name</th><th>EPS Growth</th><th>P/E Ratio</th></tr>";
+          data.forEach(stock => {
+              html += `<tr><td>${stock.ticker}</td><td>${stock.name}</td><td>${stock.eps}%</td><td>${stock.pe}</td></tr>`;
+          });
+          html += "</table>";
+          document.getElementById("stock-results").innerHTML = html;
+      })
+      .catch(error => console.error("Error filtering stocks:", error));
+    }
+
+    function fetchHighestEPSGrowth() {
+      fetch("{{ url_for('buy_stocks.highest_eps_growth') }}")
+        .then(response => response.json())
+        .then(data => {
+          let html = "<table><tr><th>Ticker</th><th>Name</th><th>EPS Growth (%)</th></tr>";
+          data.forEach(item => {
+              html += `<tr>
+                          <td>${item.ticker}</td>
+                          <td>${item.name}</td>
+                          <td>${item.eps_growth}%</td>
+                       </tr>`;
+          });
+          html += "</table>";
+          document.getElementById("eps-results").innerHTML = html;
+        })
+        .catch(error => {
+          console.error("Error fetching highest EPS growth:", error);
+          document.getElementById("eps-results").innerHTML = "<p>Error loading highest EPS growth.</p>";
+        });
+    }
+
+    function fetchUndervaluedStocks() {
+      fetch("{{ url_for('buy_stocks.undervalued_stocks') }}")
+        .then(response => response.json())
+        .then(data => {
+          let html = "<table><tr><th>Ticker</th><th>Name</th><th>P/E Ratio</th><th>EPS Growth</th></tr>";
+          data.forEach(item => {
+              html += `<tr>
+                          <td>${item.ticker}</td>
+                          <td>${item.name}</td>
+                          <td>${item.pe_ratio}</td>
+                          <td>${item.eps_growth}</td>
+                       </tr>`;
+          });
+          html += "</table>";
+          document.getElementById("undervalued-results").innerHTML = html;
+        })
+        .catch(error => {
+          console.error("Error fetching undervalued stocks:", error);
+          document.getElementById("undervalued-results").innerHTML = "<p>Error loading undervalued stocks.</p>";
+        });
+    }
+
+    function fetchMostTraded() {
+      fetch("{{ url_for('buy_stocks.most_traded_stocks') }}")
+        .then(response => response.json())
+        .then(data => {
+          let html = "<table><tr><th>Ticker</th><th>Name</th><th>Total Volume</th></tr>";
+          data.forEach(item => {
+              html += `<tr>
+                          <td>${item.ticker}</td>
+                          <td>${item.name}</td>
+                          <td>${item.total_volume}</td>
+                       </tr>`;
+          });
+          html += "</table>";
+          document.getElementById("traded-results").innerHTML = html;
+        })
+        .catch(error => {
+          console.error("Error fetching most traded stocks:", error);
+          document.getElementById("traded-results").innerHTML = "<p>Error loading most traded stocks.</p>";
+        });
+    }
+
+    // Update Prices Button (assuming the endpoint is under the 'portfolio' blueprint)
+    function updatePrices() {
+  fetch("{{ url_for('portfolio.update_prices') }}", {
+    method: "POST",
+  })
+    .then(() => location.reload())
+    .catch(error => console.error("Error updating prices:", error));
+}
+
+
+    // Utility: Simple table sorting for main stocks table
+    function sortTable(colIndex) {
+      let table = document.getElementById("stocksTable");
+      let rows = Array.from(table.rows).slice(1); // Exclude header row
+      let ascending = true;
+      rows.sort((a, b) => {
+        let valA = a.cells[colIndex].textContent.trim();
+        let valB = b.cells[colIndex].textContent.trim();
+        return isNaN(valA) ? valA.localeCompare(valB) : (valA - valB) * (ascending ? 1 : -1);
+      });
+      rows.forEach(row => table.appendChild(row));
+    }
+
+    // Initial fetch for top movers
+    fetchTopMovers();
+  </script>
+
+</body>
+</html>

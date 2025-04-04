@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up</title>
+  <style>
+    /* Dark mode styles */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #ffffff;
+      text-align: center;
+      margin-top: 100px;
+    }
+    .login-container {
+      width: 350px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #1e1e1e;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+    }
+    h2 {
+      color: #00ff00;
+    }
+    input, select {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #444;
+      border-radius: 5px;
+      background: #333;
+      color: white;
+    }
+    input::placeholder, select {
+      color: #bbb;
+    }
+    .btn {
+      background-color: #00ff00;
+      color: black;
+      border: none;
+      padding: 10px;
+      width: 100%;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .btn:hover {
+      background-color: #00cc00;
+    }
+    /* Flash messages styling */
+    .flashes {
+      list-style: none;
+      padding: 0;
+      margin: 10px 0;
+    }
+    .flashes li {
+      background-color: #ff4c4c;
+      color: white;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+    a {
+      color: #00ff00;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul class="flashes">
+          {% for category, message in messages %}
+            <li class="{{ category }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+        <script>
+          // Auto-dismiss flash messages after 3 seconds
+          setTimeout(function() {
+            var flashes = document.querySelector(".flashes");
+            if (flashes) { flashes.style.display = "none"; }
+          }, 3000);
+        </script>
+      {% endif %}
+    {% endwith %}
+    
+    <h2>Sign Up</h2>
+    <form method="post" action="{{ url_for('auth.signup') }}">
+      <input type="text" name="name" placeholder="Username" required>
+      <input type="password" name="password" placeholder="Password" required>
+  
+      <label for="brokerage" style="color: #00ff00;">Select Brokerage:</label>
+      <select name="brokerage" required>
+          <option value="">-- Select Brokerage --</option>
+          {% for broker in brokers %}
+              <option value="{{ broker.brokerage_id }}">{{ broker.name }}</option>
+          {% endfor %}
+      </select>
+  
+      <input type="number" name="balance" placeholder="Starting Balance (min: 1000)" min="1000" required>
+  
+      <input type="submit" class="btn" value="Sign Up">
+  </form>
+  
+  </div>
+
+</body>
+</html>
