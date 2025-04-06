@@ -258,7 +258,6 @@ app = Flask(__name__)
 app.secret_key = 'your-super-secret-key'
 app.config["DATABASE_URL"] = "postgresql://neondb_owner:npg_PzVnDow58QpN@ep-lively-star-a5pwxt6r-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require"
 
-#  Initialize PostgreSQL Connection Pool
 try:
     app.config["DB_POOL"] = pool.SimpleConnectionPool(
         minconn=1,

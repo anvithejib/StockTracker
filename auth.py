@@ -8,8 +8,7 @@ auth = Blueprint("auth", __name__)
 # List of admin usernames (you can hardcode these or use other criteria)
 ADMIN_USERS = {
     "admin1": "password1",
-    "admin2": "password2",
-    # Add more admins here
+    "admin2": "password2"
 }
 
 @auth.route("/login", methods=["GET", "POST"])
