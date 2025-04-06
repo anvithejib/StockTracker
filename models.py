@@ -5,8 +5,7 @@ from flask_login import UserMixin
 from flask import current_app
 
 # Database connection string
-DB_URL = "postgresql://neondb_owner:npg_2VY3IFQqtPlj@ep-bitter-tooth-a5v8si2g-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require"
-
+DB_URL = "postgresql://neondb_owner:npg_PzVnDow58QpN@ep-lively-star-a5pwxt6r-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require"
 def get_db_connection():
     """Establish a new database connection."""
     return psycopg2.connect(DB_URL, cursor_factory=RealDictCursor)

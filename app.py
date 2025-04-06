@@ -119,8 +119,8 @@ BEGIN
     RETURN QUERY
     SELECT ticker, name, high_52, low_52
     FROM Stock
-    WHERE high_52 >= 2.1 * low_52  -- ✅ 52W High is at least 2.1x the Low
-    ORDER BY high_52 DESC;         -- ✅ Sort by highest high_52 first
+    WHERE high_52 >= 2.1 * low_52  --  52W High is at least 2.1x the Low
+    ORDER BY high_52 DESC;         -- Sort by highest high_52 first
 END;
 $$ LANGUAGE plpgsql;
 
@@ -130,8 +130,8 @@ BEGIN
     RETURN QUERY
     SELECT ticker, name, high_52, low_52
     FROM Stock
-    WHERE low_52 = low_52  -- ✅ Ensures low_52 is unchanged (1x itself)
-    ORDER BY low_52 ASC;   -- ✅ Sort by lowest low_52 first
+    WHERE low_52 = low_52  --  Ensures low_52 is unchanged (1x itself)
+    ORDER BY low_52 ASC;   --  Sort by lowest low_52 first
 END;
 $$ LANGUAGE plpgsql;
 
@@ -245,24 +245,29 @@ from stock_details import stock_details
 from models import User
 from buy_stocks import buy_stocks
 from admin_blueprint import admin
+import sys
+import io
+
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
 
 # -------------------------------
 # Initialize Flask App
 # -------------------------------
 app = Flask(__name__)
-app.config["DATABASE_URL"] = "postgresql://neondb_owner:npg_2VY3IFQqtPlj@ep-bitter-tooth-a5v8si2g-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require"
-app.secret_key = "supersecretkey"
+app.secret_key = 'your-super-secret-key'
+app.config["DATABASE_URL"] = "postgresql://neondb_owner:npg_PzVnDow58QpN@ep-lively-star-a5pwxt6r-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require"
 
-# ✅ Initialize PostgreSQL Connection Pool
+#  Initialize PostgreSQL Connection Pool
 try:
     app.config["DB_POOL"] = pool.SimpleConnectionPool(
         minconn=1,
         maxconn=10,
         dsn=app.config["DATABASE_URL"]
     )
-    print("✅ Database Pool Initialized")
+    print("Database Pool Initialized")
 except Exception as e:
-    print(f"❌ Database Pool Initialization Failed: {e}")
+    print(f" Database Pool Initialization Failed: {e}")
     exit(1)  # Stop execution if the pool fails
 
 # -------------------------------
@@ -270,14 +275,14 @@ except Exception as e:
 # -------------------------------
 def fetch_data(query, params=None, fetch_one=False):
     """ Fetch data from PostgreSQL using connection pooling """
-    conn = app.config["DB_POOL"].getconn()  # ✅ Use the correct pool
+    conn = app.config["DB_POOL"].getconn()  #  Use the correct pool
     try:
         with conn.cursor() as cur:
             cur.execute(query, params or ())
             result = cur.fetchone() if fetch_one else cur.fetchall()
             return result
     finally:
-        app.config["DB_POOL"].putconn(conn)  # ✅ Return connection to pool
+        app.config["DB_POOL"].putconn(conn)  #  Return connection to pool
 
 def execute_query(query, params=None):
     """ Execute queries that modify data (INSERT, UPDATE, DELETE) """
@@ -338,7 +343,7 @@ def initialize_database():
     """ Creates tables and stored functions in PostgreSQL """
     execute_query(CREATE_TABLES_SQL)
     execute_query(CREATE_FUNCTIONS_SQL)
-    print("✅ Tables and functions created successfully!")
+    print(" Tables and functions created successfully!")
 
 # -------------------------------
 # Register Blueprints
@@ -354,5 +359,5 @@ app.register_blueprint(admin, url_prefix="/admin")
 # Run Flask App
 # -------------------------------
 if __name__ == "__main__":
-    initialize_database()  # ✅ Ensure tables and functions are created before running the app
+    initialize_database()  #  Ensure tables and functions are created before running the app
     app.run(debug=True)

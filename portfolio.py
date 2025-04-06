@@ -78,7 +78,7 @@ def update_prices():
     """Trigger stock price update and refresh the page."""
     try:
         # ✅ Run update_prices.py using the same Python interpreter
-        script_path = os.path.join(os.getcwd(), "back", "update_prices.py")
+        script_path = os.path.join(os.getcwd(),"update_prices.py")
         subprocess.run([sys.executable, script_path], check=True)
         print("✅ Stock prices updated successfully!")
     except Exception as e:
